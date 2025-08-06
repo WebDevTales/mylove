@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Love</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1518199266791-5375a83190b7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.5s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .screen.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        .btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        /* Loader Screen */
+        #loader-screen .heart-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 30px;
+        }
+
+        svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .fill {
+    fill: #ff3e6c;
+    transform: translateY(100%);
+    animation: fillUp 6s linear forwards;
+}
+
+@keyframes fillUp {
+    to {
+        transform: translateY(0%);
+    }
+}
+
+    .fill,
+    .outline {
+      transition: all 0.3s ease;
+    }
+
+    .label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: white;
+      pointer-events: none;
+    }
+
+        /* Tap Screen */
+        #tap-screen .heart-icon {
+            font-size: 100px;
+            animation: pulse 1.5s infinite;
+            margin-bottom: 30px;
+            color: #ff6b6b;
+        }
+
+        /* Gif Screens */
+        .gif-container {
+            max-width: 300px;
+            margin: 0 auto 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .gif-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Memory Game */
+        #game-screen {
+            display: none;
+            flex-direction: column;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 500px !important;
+            width: 100% !important;
+            margin: 20px auto;
+        }
+
+        .card {
+            width: 100%;
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .card:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .card.matched {
+            background: rgba(107, 255, 124, 0.7);
+            cursor: default;
+        }
+
+        /* Typing Animation Screen */
+        #typing-screen .typing-text {
+            font-size: 1.5rem;
+            height: 60px;
+            margin: 20px 0;
+            background: rgb(255, 62, 108, 0.5);
+            border-radius: 10px;
+            color: #fff;
+            display: flex;
+            padding: 5px 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Floating Hearts */
+        .floating-heart {
+            position: absolute;
+            color: rgba(255, 107, 107, 0.6);
+            font-size: 20px;
+            animation: float 10s linear infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Emoji Rain */
+        .emoji-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .emoji {
+            position: absolute;
+            font-size: 24px;
+            animation: fall linear forwards;
+            pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            p {
+                font-size: 1rem;
+            }
+            
+            .game-container {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 5px;
+            }
+            
+            .card {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating hearts background -->
+    <div id="floating-hearts"></div>
+
+    <!-- Loader Screen -->
+    <div class="screen active" id="loader-screen">
+        <h1>Loading My Love...</h1>
+        <div class="heart-container">
+            <svg viewBox="0 0 512 512">
+                <!-- Outline heart -->
+                <path class="outline" fill="#ddd" d="M471.7,73.2c-54.5-46.4-136-38.7-186.4,13.2L256,116.5l-29.3-30.1
+                  C176.3,34.5,94.8,26.8,40.3,73.2c-62.2,53-66.1,149.8-9.6,207.6l193.5,199.8c12,12.4,31.4,12.4,43.4,0l193.5-199.8
+                  C537.8,223,533.9,126.2,471.7,73.2z"/>
+          
+                <!-- Clipping path -->
+                <clipPath id="heartClip">
+                  <path d="M471.7,73.2c-54.5-46.4-136-38.7-186.4,13.2L256,116.5l-29.3-30.1
+                  C176.3,34.5,94.8,26.8,40.3,73.2c-62.2,53-66.1,149.8-9.6,207.6l193.5,199.8c12,12.4,31.4,12.4,43.4,0l193.5-199.8
+                  C537.8,223,533.9,126.2,471.7,73.2z"/>
+                </clipPath>
+          
+                <!-- Filling rectangle -->
+                <g clip-path="url(#heartClip)">
+                  <rect class="fill" x="0" y="0" width="100%" height="100%" />
+                </g>
+              </svg>
+              <div class="label" id="count">0%</div>
+        </div>
+    </div>
+
+    <!-- Tap Screen -->
+    <div class="screen" id="tap-screen">
+        <div class="heart-icon">❤️</div>
+        <h1>Tap to Feel the Love</h1>
+        <p>Ready for something special, my PUCHU?</p>
+        <button class="btn" id="tap-btn">Touch Here</button>
+    </div>
+
+    <!-- First Greeting Screen -->
+    <div class="screen" id="greeting-screen-1">
+        <div class="gif-container">
+            <!-- Replace with your Bubu gif -->
+            <img src="https://gifdb.com/images/high/bubu-drives-car-hello-dudu-j04qdpgora9dqs1l.webp" alt="Bubu love">
+        </div>
+        <h1>Hello My MOHTARMA!</h1>
+        <p>Every moment with you feels like a beautiful dream come true.</p>
+        <button class="btn" id="greeting-btn-1">Continue</button>
+    </div>
+
+    <!-- Second Greeting Screen -->
+    <div class="screen" id="greeting-screen-2">
+        <div class="gif-container">
+            <!-- Replace with your Bubu gif -->
+            <img src="https://gifdb.com/images/high/bubu-dudu-milk-sips-715zn9pe6tnyrs25.webp" alt="Bubu love">
+        </div>
+        <h1>I Have Something For You, My Queen!</h1>
+        <p>A little game to show how much I cherish our memories together.</p>
+        <button class="btn" id="greeting-btn-2">Let's Play</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div class="screen" id="game-screen">
+        <h1>Our Memory Game</h1>
+        <p>Find all the matching pairs to see my special message!</p>
+        <div class="game-container" id="game-container"></div>
+    </div>
+
+    <!-- Completion Screen -->
+    <div class="screen" id="completion-screen">
+        <div class="gif-container">
+            <!-- Replace with your Bubu gif -->
+            <img src="https://gifdb.com/images/high/wiggly-bubu-dudu-ut6vjd2lcisbtfwf.webp" alt="Bubu love">
+        </div>
+        <h1>You Did It, My Smart Love!</h1>
+        <p>Just like how you always find your way to my heart.</p>
+        <button class="btn" id="completion-btn">See My Message</button>
+        <div class="emoji-rain" id="emoji-rain-1"></div>
+    </div>
+
+    <!-- Typing Animation Screen -->
+    <div class="screen" id="typing-screen">
+        <div class="gif-container">
+            <!-- Replace with your Bubu kissing gif -->
+            <img src="https://gifdb.com/images/high/bubu-dudu-i-love-you-hug-jxjp9b3ff3g2so2r.webp" alt="Bubu kiss">
+        </div>
+        <div class="typing-text" id="typing-text"></div>
+        <p id="final-message" style="display: none;">
+            You are the most amazing person I've ever known.<br>
+            Every day with you is a blessing.<br>
+            I love you more than words can express.
+        </p>
+        <div class="emoji-rain" id="emoji-rain-2"></div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const screens = document.querySelectorAll('.screen');
+        const loaderScreen = document.getElementById('loader-screen');
+        const tapScreen = document.getElementById('tap-screen');
+        const greetingScreen1 = document.getElementById('greeting-screen-1');
+        const greetingScreen2 = document.getElementById('greeting-screen-2');
+        const gameScreen = document.getElementById('game-screen');
+        const completionScreen = document.getElementById('completion-screen');
+        const typingScreen = document.getElementById('typing-screen');
+        const gameContainer = document.getElementById('game-container');
+        const progressText = document.getElementById('count');
+        const floatingHearts = document.getElementById('floating-hearts');
+        const emojiRain1 = document.getElementById('emoji-rain-1');
+        const emojiRain2 = document.getElementById('emoji-rain-2');
+        const typingText = document.getElementById('typing-text');
+        const finalMessage = document.getElementById('final-message');
+
+        // Game variables
+        let cards = [];
+        let hasFlippedCard = false;
+        let lockBoard = false;
+        let firstCard, secondCard;
+        let matchedPairs = 0;
+        const totalPairs = 8;
+        const emojis = ['❤️', '💕', '😍', '🥰', '💘', '💖', '💝', '💓'];
+
+        // Create floating hearts
+        function createFloatingHearts() {
+            for (let i = 0; i < 20; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('floating-heart');
+                heart.innerHTML = '❤️';
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.top = `${Math.random() * 100}%`;
+                heart.style.animationDuration = `${5 + Math.random() * 10}s`;
+                heart.style.fontSize = `${10 + Math.random() * 20}px`;
+                floatingHearts.appendChild(heart);
+            }
+        }
+
+        // Create emoji rain
+        function createEmojiRain(container, count = 30) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const emoji = document.createElement('div');
+                    emoji.classList.add('emoji');
+                    emoji.innerHTML = ['❤️', '💕', '😍', '🥰', '💘'][Math.floor(Math.random() * 5)];
+                    emoji.style.left = `${Math.random() * 100}%`;
+                    emoji.style.animationDuration = `${3 + Math.random() * 5}s`;
+                    emoji.style.fontSize = `${20 + Math.random() * 30}px`;
+                    container.appendChild(emoji);
+                    
+                    // Remove emoji after animation completes
+                    setTimeout(() => {
+                        emoji.remove();
+                    }, 8000);
+                }, i * 300);
+            }
+        }
+
+        function simulateLoading() {
+        let progress = 0;
+        const fillAnimationDuration = 6000; // 6 seconds to match CSS animation
+        const intervalDuration = 30; // ms between updates
+        const totalSteps = fillAnimationDuration / intervalDuration;
+        const progressIncrement = 100 / totalSteps;
+        
+        const interval = setInterval(() => {
+            progress += progressIncrement;
+            progressText.textContent = `${Math.round(progress)}%`;
+            
+            if (progress >= 100) {
+                clearInterval(interval);
+                progressText.textContent = "100%";
+                setTimeout(() => {
+                    switchScreen(loaderScreen, tapScreen);
+                }, 500);
+            }
+        }, intervalDuration);
+    }
+
+        // Switch between screens
+        function switchScreen(from, to) {
+            from.classList.remove('active');
+            setTimeout(() => {
+                to.classList.add('active');
+                // Special case for game screen
+                if (to === gameScreen) {
+                    gameScreen.style.display = 'flex';
+                    initGame();
+                } else {
+                    gameScreen.style.display = 'none';
+                }
+            }, 500);
+        }
+
+        // Initialize memory game
+        function initGame() {
+            // Reset game variables
+            cards = [];
+            matchedPairs = 0;
+            resetBoard();
+            
+            // Duplicate emojis to create pairs
+            const gameEmojis = [...emojis, ...emojis];
+            
+            // Shuffle emojis
+            gameEmojis.sort(() => 0.5 - Math.random());
+            
+            // Create cards
+            gameContainer.innerHTML = '';
+            gameEmojis.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.dataset.emoji = emoji;
+                card.dataset.index = index;
+                card.addEventListener('click', flipCard);
+                
+                // Add front face (emoji will be shown when flipped)
+                const front = document.createElement('div');
+                front.textContent = emoji;
+                front.style.display = 'none';
+                card.appendChild(front);
+                
+                gameContainer.appendChild(card);
+                cards.push(card);
+            });
+        }
+
+        // Flip card function
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+            if (this.classList.contains('matched')) return;
+            
+            this.classList.add('flipped');
+            this.children[0].style.display = 'block'; // Show emoji
+            
+            if (!hasFlippedCard) {
+                // First click
+                hasFlippedCard = true;
+                firstCard = this;
+                return;
+            }
+            
+            // Second click
+            secondCard = this;
+            checkForMatch();
+        }
+
+        // Check for matching cards
+        function checkForMatch() {
+            const isMatch = firstCard.dataset.emoji === secondCard.dataset.emoji;
+            
+            if (isMatch) {
+                disableCards();
+                matchedPairs++;
+                if (matchedPairs === totalPairs) {
+                    setTimeout(() => {
+                        switchScreen(gameScreen, completionScreen);
+                        createEmojiRain(emojiRain1, 50);
+                    }, 1000);
+                }
+            } else {
+                unflipCards();
+            }
+        }
+
+        // Disable matched cards
+        function disableCards() {
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            resetBoard();
+        }
+
+        // Unflip unmatched cards
+        function unflipCards() {
+            lockBoard = true;
+            
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+                firstCard.children[0].style.display = 'none';
+                secondCard.children[0].style.display = 'none';
+                resetBoard();
+            }, 1000);
+        }
+
+        // Reset board after each turn
+        function resetBoard() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+
+        // Typing animation
+        function typeMessage() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                typingText.textContent = `❤️ I love you ${progress}%, Alishba ❤️` ;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        finalMessage.style.display = 'block';
+                    }, 1000);
+                }
+            }, 200);
+        }
+
+        // Event listeners
+        document.getElementById('tap-btn').addEventListener('click', () => {
+            switchScreen(tapScreen, greetingScreen1);
+        });
+
+        document.getElementById('greeting-btn-1').addEventListener('click', () => {
+            switchScreen(greetingScreen1, greetingScreen2);
+        });
+
+        document.getElementById('greeting-btn-2').addEventListener('click', () => {
+            switchScreen(greetingScreen2, gameScreen);
+        });
+
+        document.getElementById('completion-btn').addEventListener('click', () => {
+            switchScreen(completionScreen, typingScreen);
+            createEmojiRain(emojiRain2, 100);
+            typeMessage();
+        });
+
+        // Initialize
+        createFloatingHearts();
+        simulateLoading();
+    </script>
+</body>
+</html>
